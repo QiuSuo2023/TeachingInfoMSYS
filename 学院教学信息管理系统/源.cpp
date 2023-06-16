@@ -24,23 +24,27 @@ struct teacher {
 };
 /*链表结点结构体类型*/
 typedef struct node {
-	struct teacher data;		//数据域
-	struct node* next;		//指针域
+	struct teacher data;//数据域
+	struct node* next;//指针域
 }Node, * Link;//结构体变量、结构体变量指针
 
 /*函数声明部分*/
 	/*一级功能*/
-void menu();//一、菜单显示，用户界面
-void Disp(Link l);//二、显示
-void Add(Link l);//三、添加
-void Qur(Link l);//四、查询
-void Sort(Link l);//五、排序
+void Menu(Link l);//一、菜单选择
+void Add(Link l);//二、添加----------------按钮1
+void Disp(Link l);//三、显示---------------按钮2
+void Qur(Link l);//四、查询----------------按钮3
+void Sort(Link l);//五、排序---------------按钮4
+void Modify(Link l);//六、检查并修改-------按钮5
+void Del(Link l);//七、删除----------------按钮6
+void Quit(Link l);//八、退出和选择性保存---按钮0
 	/*子功能*/
-void Save(Link l);//1.存档
+void Save(Link l);//1.存档-----------------按钮7
 void stringinput(char* t, int lens, const char* notice);//2.字符串校验输入
 double numberinput(const char* notice);//3.数值校验输入
 Node** Locate(Link l, char findmess[], const int select);//4.定位
 	/*封装输出功能*/
+void menu();//1.打印菜单，用户界面
 void printheader();//1.打印表头
 void printdata(Node* pp);//2.打印数据
 void Wrong();//3.错误提示
@@ -53,117 +57,71 @@ int saveflag = 0;/*保存到硬盘的标志*/
 /*主函数*/
 int main()
 {
-	Link l;						//定义链表，l是头指针
-	FILE* fp;					//定义文件指针
-	int select;					//保存用户输入的选择（0-9）
-	char ch;					//保存用户输入的选择（y,Y,n,N）
-	int count = 0;			//保存文件中的记录条数（或结点个数）
-	Node* p, * r;			//p是new指针，r是尾指针
+	Link l;//定义链表，l是头指针，该节点的数据域不存储数据，仅作牵头作用，可以省去创建链表循环内的表头判断，对排序也有帮助
+	FILE* fp;//定义文件指针
+	int count = 0;//保存文件中的记录条数（结点个数）
+	Node* p, * r;//p是new指针，r是尾指针
 
-	/*创建头结点，单链表*/
-	l = (Node*)malloc(sizeof(Node));	//申请内存（1），同时将头指针定在头结点（3）；该节点的数据域不存储数据，仅作牵头作用，可以省去创建链表循环内的表头判断，对排序也有帮助
-	/*申请检查*/
-	if (!l) {
-		printf("\n 申请空间失败！ ");
-		return 0;//退出程序
-	}
-	l->next = NULL;								//头结点指针域初始化（2）
-	r = l;													//放好尾指针（4）
+/*一、读取文件信息*/
+	/*创建单链表的头结点*/
+	l = (Node*)malloc(sizeof(Node));//申请内存（1），同时将头指针定在头结点（3）；
+	if (!l) {printf("\n 申请空间失败！ ");return 0;
+	}/*常规检查*/
+	l->next = NULL;//头结点指针域初始化（2）
+	r = l;//放好尾指针（4）
 
-	/*从外存中的文件读取数据到内存中的单链表*/
-	fp = fopen("teacher", "ab+");			//打开文件：可读写、不清空、不存在会新建
-	/*文件打开检查*/
-	if (fp == NULL) {
-		printf("\n=====>打开失败！\n");
-		exit(0);//终止可执行程序
-	}
-	/*读取数据*/
+	/*读取文件数据，复制到单链表*/
+	fp = fopen("teacher", "ab+");//打开文件：可读写、不清空、不存在会新建
+	if (fp == NULL) {printf("\n=====>打开失败！\n");exit(0);/*终止可执行程序*/
+	}/*常规检查*/
 	printf("奋力读取文件中，请稍后...\n");//交互提示
-	while (!feof(fp)) {//文件结束退出循环
-		p = (Node*)malloc(sizeof(Node));			/*逐个创建结点，接受文件数据（1）*/
-		/*申请检查*/
-		if (!p) {
-			printf("空间申请失败！");
-			exit(0);
-		}
-		if (fread(p, sizeof(Node), 1, fp) == 1) {		//从文件中读取数据写入到结点数据域
-			p->next = NULL;								//初始化新节点指针域（2）
-			r->next = p;										//连接到上一结点（3）
-			r = p;													//尾结点后移到新结点（4）
-			count++;											//记录结点个数
+	while (!feof(fp)) {//文件结束时退出循环
+		p = (Node*)malloc(sizeof(Node));//逐个创建结点，接受文件数据（1）
+		if (!p) {printf("空间申请失败！");exit(0);/*终止可执行程序*/
+		}/*常规检查*/
+		/*读取文件，为结点数据域赋值*/
+		if (fread(p, sizeof(Node), 1, fp) == 1) {
+			p->next = NULL;//指针域赋值（2），文件中的指针域失效了
+			r->next = p;//连接到上一结点（3）
+			r = p;		//尾结点后移到新结点（4）
+			count++;	//记录结点个数
 		}
 	}
-	fclose(fp);											//关闭文件
+	fclose(fp); //关闭文件
 	printf("=====>打开文件成功！共读取到 %d 条记录\n\n\n\n=====>登录我的账号：\n", count);
 	system("pause");
-	/*菜单操作*/
-	menu();
-	while (1)//不断的返回菜单
-	{
-		system("cls");//清屏
-		menu();//显示菜单
-		p = r;//?
 
-		/*功能选择*/
-		printf("\n请选择你想要的功能（0-9）：");
-		scanf("%d", &select);
-
-		/*先判断退出*/
-		if (select == 0) {//退出选项
-				/*保存确认*/
-			if (saveflag == 1) {
-				getchar();
-				printf("\n=====>是否需要保存修改？（y/n)：");
-				scanf("%c", &ch);
-				if (ch == 'Y' || ch == 'y')
-					Save(l);
-			}
-			/*结束语*/
-			printf("\n\n\n\n=====>感谢您的使用！祝您生活愉快！\n\n\n\n");
-			getchar();
-			break;//跳出不断循环的菜单操作，mian函数返回0给操作系统，结束程序
-		}
-
-		/*再判断其他*/
-		switch (select)
-		{
-		case 1:Add(l); break;//1.添加记录
-		case 2:system("cls"); Disp(l); break;//2.显示记录
-		case 3:Qur(l);  break;//3.信息查询
-		case 4:Sort(l); break;//4.记录排序
-		case 7:
-			if (saveflag == 1)
-				Save(l);
-			else
-				printf("\n\n\=====>您未做任何修改，无需重复保存哦.\n按任意键返回主菜单...");
-			getchar();
-			getchar();
-			break;//5.立即保存，保存前做判定
-		default:Wrong(); getchar(); break;
-		}
-
-	}//while(l)的结尾
+/*二、菜单界面*/
+	Menu(l);
 	return 0;
 }
 
 /*一级功能*/
-	/*一、菜单显示函数*/
-void menu() {
-	system("cls");
-	system("color 0A");
-	printf("\t\t\t\t\t   ******************************\n");
-	printf("\t\t\t\t\t   *      教师信息管理系统      *\n");
-	printf("\t\t\t\t\t   ******************************\n");
-	printf("\t\t\t\t\t   ┌────────────────────────────┐\n");
-	printf("\t\t\t\t\t   │ 1. 添加信息    2. 显示全部 │\n");
-	printf("\t\t\t\t\t   │                            │\n");
-	printf("\t\t\t\t\t   │ 3. 查询信息    4. 排序信息 │\n");
-	printf("\t\t\t\t\t   │                            │\n");
-	printf("\t\t\t\t\t   │ 5. 修改信息    6. 删除信息 │\n");
-	printf("\t\t\t\t\t   │                            │\n");
-	printf("\t\t\t\t\t   │ 7. 立即保存    0. 退出程序 │\n");
-	printf("\t\t\t\t\t   └────────────────────────────┘\n");
-	printf("\t\t\t\t\t   │────────欢迎您的使用────────│\n");
+/*一、菜单选择函数*/
+void Menu(Link l) {
+	int select;			//保存用户输入的选择（0-9）
+
+	while (1)//可以不断地返回菜单
+	{
+		system("cls");//清屏
+		menu();//菜单界面打印
+		/*功能选择*/
+		printf("\n请选择你想要的功能【0-9】：");
+		scanf("%d", &select);
+
+		switch (select)
+		{
+		case 0:Quit(l); return;//0.返回main函数，由main函数结束程序
+		case 1:Add(l); break;//1.添加记录
+		case 2:system("cls"); Disp(l); break;//2.显示记录
+		case 3:Qur(l);  break;//3.信息查询
+		case 4:Sort(l); break;//4.记录排序
+		case 5:Modify(l); break;//5.修改信息
+
+		case 7:Save(l); getchar();break;//7.立即保存，保存前做判定
+		default:Wrong(); getchar();break;//如果错误输入
+		}
+	}//菜单while(l)的结尾，返回main函数，由main函数结束程序
 }
 
 /*二、显示函数*/
@@ -192,77 +150,84 @@ void Disp(Link l) {
 
 /*三、添加函数*/
 void Add(Link l) {
-	Node* p, * r, * s;					//p（新结点指针）、r（尾指针）用于创建链表，s（检查指针）用于遍历检查职工号
-	char ch, flag = 0, num[10]; //flag：重新输入标志，num：职工号，ch：保存用户选择
+	Node* p, * r, * s;//p（新结点指针），r（尾指针）用于创建链表；s（检查指针）用于遍历检查职工号
+	char ch, flag = 0, num[10]; //flag：职工号重复标志，num：职工号，ch：保存用户选择
 
-	r = l;//尾指针指向表头
-	s = l->next;//检查指针从实际数据开始，一开始指向NULL
+	r = l;//尾指针，指向表头
+	s = l->next;//检查指针，从实际数据开始，一开始指向NULL
 
 	system("cls");
-	Disp(l);									//先清屏，打印已有信息
+	Disp(l);//先清屏，打印已有信息
 	printf("\n以上是系统原有信息.\n");
-	while (r->next != NULL)
-		r = r->next;//将尾指针定位到表尾，准备添加记录
 
-	while (1) //可以循环输入多条记录，直到用户向num输入0时返回主菜单
+	while (r->next != NULL)
+		r = r->next;//将尾指针定位到表尾，追加或新建记录
+
+	/*输入部分开始*/
+	while (1) //可以循环输入多条记录，直到用户向num输入0时返回主菜单，或重复时选择退回主菜单
 	{
-		/*职工号输入检查*/
-		while (1) {//不为0、不重复才可通过检查，否则一直输入或返回主菜单
-			stringinput(num, 10, "请输入职工号【按0返回主菜单】：");//字符串校验输入
-			flag = 0;//每次循环开头重置flag
-			/*职工号排0*/
-			if (strcmp(num, "0") == 0) {//如果输入为0
+		/*输入和确认*/
+		while (1)//每条添加确认操作
+		{
+			/*退出操作和职工号查重*/
+			while (1) //不为0、不重复才可输入信息，否则一直输入或返回主菜单
+			{				
+				stringinput(num, 10, "请输入职工号【按0返回主菜单】：");//字符串校验输入
+				
+				/*退出操作*/
+				if (strcmp(num, "0") == 0)
+					return;//按0退回主菜单
+
+				/*职工号查重*/
+				s = l->next;//每次查重，重置检查指针，到表头
+				flag = 0;//同时，重置重复flag=0
+				while (s) {
+					if (strcmp(s->data.num, num) == 0) {flag = 1;break;}//发现重复，标记
+					s = s->next;//指针后移，遍历从头到尾
+				}
+
+				if (flag == 1){//职工号重复
+					getchar();
+					printf("=====>此职工号 %s 已存在，是否重新输入？【y/n】：\n", num);
+					scanf("%c", &ch);
+					if (ch == 'y' || ch == 'Y')continue;
+					else return;//返回主菜单
+				}
+				else break;//不退出，没重复，通过检查
+			}//职工号检查完毕
+
+			/*建立链表（4步）*/
+			/*逐个创建结点（1）*/
+			p = (Node*)malloc(sizeof(Node));
+			if (!p) {
+				printf("空间申请失败！");
 				return;//返回主菜单
 			}
-			/*职工号查重*/
-			s = l->next;//重置检查指针到表头
-			while (s) {//遍历到表尾
-				if (strcmp(s->data.num, num) == 0) {
-					flag = 1;
-					break;
-				}
-				s = s->next;//指针后移
+			/*给结点录入信息（2）*/
+			strcpy(p->data.num, num);
+			stringinput(p->data.name, 15, "姓名：");
+			stringinput(p->data.title, 15, "职称：");
+			stringinput(p->data.sex, 2, "性别：");
+			stringinput(p->data.lesson[0], 15, "课程1：");
+			stringinput(p->data.lesson[1], 15, "课程2：");
+			stringinput(p->data.lesson[2], 15, "课程3：");
+			p->data.score = numberinput("教学效果综合评分：");//数据域赋值
+			p->next = NULL;//指针域赋值
+			
+			/*确认是否重输*/
+			int select;
+			printf("=====>按【0】重输，按【1】继续\n");
+			scanf("%d", &select);
+			if (select == 0) {
+				free(p);continue;//清空本次数据，释放不要的内存
 			}
-			if (flag == 1)//职工号重复
-			{
-				getchar();
-				printf("=====>此职工号 %s 已存在，是否重新输入？【y/n】：\n", num);
-				scanf("%c", &ch);
-				if (ch == 'y' || ch == 'Y')
-					continue;
-				else
-					return;//返回主菜单
-			}
-			else
-			{
-				break;//不为0、不重复，通过检查
-			}
-		}//职工号检查完毕
-
-		/*逐个创建结点，接受文件数据（1）*/
-		p = (Node*)malloc(sizeof(Node));
-		/*空间申请检查*/
-		if (!p) {
-			printf("空间申请失败！");
-			return;//返回主菜单
+			r->next = p;//接入上一个结点；r->next始终为空；r最开始为传入的链表尾结点或表头，l头结点不存信息（3）
+			r = p;//尾指针指向新节点（4）
 		}
-		//对结点赋值（2）
-		strcpy(p->data.num, num);			//空间域赋值，职工号
-		stringinput(p->data.name, 15, "姓名：");
-		stringinput(p->data.title, 15, "职称：");
-		stringinput(p->data.sex, 2, "性别：");
-		stringinput(p->data.lesson[0], 15, "课程1：");
-		stringinput(p->data.lesson[1], 15, "课程2：");
-		stringinput(p->data.lesson[2], 15, "课程3：");
-		p->data.score = numberinput("教学效果综合评分：");
-		p->next = NULL;							//指针域赋值
-
-		r->next = p;									//接入上一个结点：r=l最开始为表头，只起牵头作用的表头（3）
-		r = p;											//尾指针指向新节点（4）
-
-		saveflag = 1;//全局变量，保存标记
-	}//输入部分结束；输入0、取消重输：return;		结束Add函数，返回主菜单
-	return;//应该不用再有return; 上面已有出口
+		/*已修改标记*/
+		saveflag = 1;//全局变量
+	}//输入部分结束；输入0时结束此函数，返回主菜单
+	//return;//应该不用再有return; 上面已有出口？
 }
 
 /*四、查询函数*/
@@ -474,9 +439,129 @@ void Sort(Link l) {
 	return;
 }
 
+/*六、检查并修改函数*/
+void Modify(Link l) {
+	Node* *p;//存放教师记录结点，但只用p[0]
+	char id[20];//存放职工号，修改以职工号为索引,因为职工号唯一，按其他的索引不唯一，如此修改存在管理问题
+	int select1;//是否修改信息
+	if (!l->next) {
+		printf("\n=====>当前文件暂无教师记录\n");
+		system("pause");
+		getchar();
+		return;//退出此函数，返回主调函数
+	}
+
+	system("cls");
+	printf("\t\t\t\t\t   ******************************\n");
+	printf("\t\t\t\t\t   *          更改信息          *\n");
+	printf("\t\t\t\t\t   ******************************\n");
+	Disp(l);
+	printf("=====>以上是原有教师信息.\n");
+
+	printf("=====>【1】精确查询 【2】继续\n");
+	int select4;//是否需要精确查询
+	scanf("%d",&select4);
+	//getchar();//是否需要吸收\n?
+	if (select4 == 1)
+		Qur(l);//先让用户查看要修改教师的相关信息，确认是否修改
+	/*提示是否修改*/
+	printf("请您核查，是否修改？【1】信息有误，我需要修改    【2】核查正确，返回主菜单\n");
+	scanf("%d", &select1);
+	if (select1 != 1)
+		return;//返回菜单，这里可以在建一个更改页面，就不必返回菜单
+
+	/*开始修改*/
+	while (1)//多条修改
+	{
+		/*开始修改，一次只能修改一条*/
+		stringinput(id, 10, "请输入您要修改教师的职工号：");
+		/*找出修改对象，唯一*/
+		p = Locate(l, id, 1);//注意：这里返回的是指针数组,但是是按职工号查找，返回的数组只存了一个p[0]
+		/*判断是否存在该教师*/
+		if (p[0])
+		{
+			/*用户修改并确认*/
+			while (1) 
+			{
+				int select2;//选择修改内容
+				//printf("=====>需要修改教师的职工号：%s\n", p[0]->data.num);
+				printf("=====>您需要修改该名教师的？\n"
+					"\t\t\t\t\   【   1：姓名     2：职称     3：性别    】\n"
+					"\t\t\t\t\   【   4：课程1    5：课程2    6：课程3   】\n"
+					"\t\t\t\t\   【   7: 仅三名课程  8：教学效果综合评分 】\n"
+					"\t\t\t\t\   【   9：全部     0：退出修改            】\n"
+					"\t\t\t\t\   【如职工号有误，请删除该名教师后重新录入】\n");
+				scanf("%d",&select2);
+				switch (select2)
+				{
+				case 0:return;//返回菜单
+				case 1:printf("修改前姓名：%s\n", p[0]->data.name); stringinput(p[0]->data.name, 15, "修改后："); break;
+				case 2:printf("修改前职称：%s\n", p[0]->data.title); stringinput(p[0]->data.title, 15, "修改后："); break;
+				case 3:printf("修改前性别：%s\n", p[0]->data.sex); stringinput(p[0]->data.sex, 3, "修改后："); break;
+				case 4:printf("修改前课程1：%s\n", p[0]->data.lesson[0]); stringinput(p[0]->data.lesson[0], 15, "修改后："); break;
+				case 5:printf("修改前课程2：%s\n", p[0]->data.lesson[2]); stringinput(p[0]->data.lesson[1], 15, "修改后："); break;
+				case 6:printf("修改前课程3：%s\n", p[0]->data.lesson[3]); stringinput(p[0]->data.lesson[2], 15, "修改后："); break;
+				case 7:for (int i = 0; i < 3; i++) {
+					printf("修改前课程%d：%s\n", i, p[0]->data.lesson[i]); stringinput(p[0]->data.lesson[i], 15, "修改后：");
+				}break;
+				case 8:printf("修改前评分：%lf\n", p[0]->data.score); p[0]->data.score = numberinput("修改后："); break;
+				case 9:
+					printf("修改前姓名：%s\n", p[0]->data.name); stringinput(p[0]->data.name, 15, "修改后：");
+					printf("修改前职称：%s\n", p[0]->data.title); stringinput(p[0]->data.title, 15, "修改后：");
+					printf("修改前性别：%s\n", p[0]->data.sex); stringinput(p[0]->data.sex, 3, "修改后：");
+					printf("修改前课程1：%s\n", p[0]->data.lesson[0]); stringinput(p[0]->data.lesson[0], 15, "修改后：");
+					printf("修改前课程2：%s\n", p[0]->data.lesson[2]); stringinput(p[0]->data.lesson[1], 15, "修改后：");
+					printf("修改前课程3：%s\n", p[0]->data.lesson[3]); stringinput(p[0]->data.lesson[2], 15, "修改后：");
+					printf("修改前评分：%lf\n", p[0]->data.score); p[0]->data.score = numberinput("修改后："); break;
+				}//单次修改结束
+				int select3;//确认修改无误
+				printf("=====>【1：确认修改    !1：重新修改】\n");
+				scanf("%d", &select3);
+				//getchar();
+				if (select3 == 1)break;//按1确认，否则重新修改
+			}//确认本次修改
+			printf("=====>修改成功！教师 %s 更新为：\n", p[0]->data.num);
+			saveflag = 1;//记录修改标记
+			printdata(p[0]);
+		}
+		else
+			Nofind();
+		printf("=====>是否继续修改？【1】是  【2】否：");
+		scanf("%d", &select4);//变量太多，借一个
+		if (select4 != 1)return;//多条修改的出口
+	}//修改操作结束
+}
+
+/*七、删除函数*/
+void Del(Link l) {
+
+}
+
+/*退出并选择保存函数*/
+void Quit(Link l) {
+	char ch;//选择器
+	/*保存确认*/
+	/*检测到有修改*/
+	if (saveflag == 1) {
+		getchar();
+		printf("\n=====>是否需要保存修改？【y/n】：");
+		scanf("%c", &ch);
+		if (ch == 'Y' || ch == 'y') Save(l);
+	}
+	/*结束语*/
+	printf("\n=====>感谢您的使用！祝您生活愉快！\n");
+	getchar();
+	return;
+}
+
 /*子功能*/
-	/*1.存档子功能函数*/
+/*1.存档子功能函数*/
 void Save(Link l) {
+	if (saveflag != 1) {
+		printf("\n\n\=====>您未做任何修改，无需重复保存哦.\n按任意键返回主菜单...");
+		return;//保存前检查数据是否经过改动
+	}
+
 	FILE* fp;
 	Node* p;
 	int count = 0;
@@ -487,8 +572,7 @@ void Save(Link l) {
 		getchar();
 		return;
 	}
-
-	p = l->next;
+	p = l->next;//从数据表头开始录入
 	while (p) {
 		if (fwrite(p, sizeof(Node), 1, fp) == 1)//每次写入一个结点信息至文件
 		{
@@ -500,7 +584,7 @@ void Save(Link l) {
 	}
 	if (count > 0) {
 		getchar();
-		printf("\n\n\n\n\n=====>文件保存完成，共有%d条记录.\n请按任意键继续...", count);
+		printf("\n=====>文件保存完成，共有%d条记录.\n请按任意键继续...", count);
 		getchar();
 		saveflag = 0;
 	}
@@ -541,9 +625,10 @@ double numberinput(const char* notice) {
 Node** Locate(Link l, char findmess[], const int select) {
 	Node* r[100] = { NULL };//保存目标结点地址，课程有重复现象
 
-	/*不同的查询方式*/
+	/*不同的定位方式*/
 	/*利用字符串比较函数判断：用户选择的方式*/
 
+	/*需要知道定位何种成员*/
 	/*1：按职工号*/
 	if (select == 1)
 	{
@@ -592,25 +677,72 @@ Node** Locate(Link l, char findmess[], const int select) {
 }
 
 /*其他封装输出到屏幕的提示功能*/
-	/*1.打印表头*/
+/*1.打印菜单*/
+void menu() {
+	system("cls");
+	system("color 0A");
+	printf("\t\t\t\t\t   ******************************\n");
+	printf("\t\t\t\t\t   *      教师信息管理系统      *\n");
+	printf("\t\t\t\t\t   ******************************\n");
+	printf("\t\t\t\t\t   ┌────────────────────────────┐\n");
+	printf("\t\t\t\t\t   │ 1. 添加信息    2. 显示全部 │\n");
+	printf("\t\t\t\t\t   │                            │\n");
+	printf("\t\t\t\t\t   │ 3. 查询信息    4. 排序信息 │\n");
+	printf("\t\t\t\t\t   │                            │\n");
+	printf("\t\t\t\t\t   │ 5. 修改信息    6. 删除信息 │\n");
+	printf("\t\t\t\t\t   │                            │\n");
+	printf("\t\t\t\t\t   │ 7. 立即保存    0. 退出程序 │\n");
+	printf("\t\t\t\t\t   └────────────────────────────┘\n");
+	printf("\t\t\t\t\t   │────────欢迎您的使用────────│\n");
+}
+/*2.打印表头*/
 void printheader() {
 	printf(HEADER1);
 	printf(HEADER2);
 	printf(HEADER3);
 }
-/*2.打印表身数据*/
+/*3.打印表身数据*/
 void printdata(Node* pp) {
 	Node* p;
 	p = pp;
 	printf(FORMAT, DATA);//宏替换
 }
-/*3.错误提示*/
+/*4.错误提示*/
 void Wrong() {
 	printf("\n\n\n\n\n***********Error：输入错误了哦，请按任意键继续***********\n");
 	getchar();
 }
-/*4.未匹配提示*/
+/*5.未匹配提示*/
 void Nofind() {
 	printf("\n=====>现在没有，或许，正在路上呢？\n");
 	getchar();
 }
+
+
+
+/*日志*/
+/*
+日志：2023 6.16 0:35
+为什么这里选0退出非要独立出来一个分支？
+可以放进switch里的；
+能不能封装成一个退出函数？->ok!
+或者在输入是添加取消输入的功能，如果信息输错了，按了enter，不能马上及时修改，这是一个问题
+对于输入时修改的功能：可以在每填完一整个记录后给出判断选择，是否需要修改？->ok!
+*/
+
+/*
+定位子功能函数
+日志：2023 6.15 10：26
+就因为比较的成员不一样，就要有多个分支重复相同的内容，这里可以做修改
+能否试试条件编译？
+但由于课程可重复，而学号唯一，可能造成搜索学号时的多余搜索，
+就算对循环针对学号做，也只会让简单的代码变得很复杂->也可以，if(select==1)return r; r[i]=t;
+现在是怎么合并这三个分支？
+*/
+
+/*
+日志：2023 6.15 22：05
+开始做数据流图之后，发现了不够模块化
+开始决定将菜单模块从main函数中独立出来，使程序更简简洁；
+如下Menu();
+*/
