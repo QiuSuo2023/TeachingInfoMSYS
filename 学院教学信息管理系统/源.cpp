@@ -355,6 +355,7 @@ int Qur(Link l) {
 			system("pause");
 			getchar();				//日志：getchar();还蛮重要的
 		}//提示完毕
+
 		int ch;//退出选择器
 		printf("\n=====>【1】继续查询    【2】退出查询\n");
 		scanf("%d", &ch);
@@ -436,14 +437,14 @@ void Sort(Link l) {
 			}//定位完毕
 		}
 		else {
-			while (rr->next != NULL && strcmp(rr->next->data.num, p->data.num) > 0) {//降序排列
+			while (rr->next != NULL && strcmp(rr->next->data.num, p->data.num) < 0) {//升序排列
 				rr = rr->next;//这里相对于简单的建表，这一句需要视情况循环若干次（对比学习）
 			}//定位完毕
 		}
 
 		/*2.3.2插入*/
 		if (rr->next == NULL)//说明新链表中的所有数据都比待插入的结点大，或者新链表为空，因为是降序排列，将待插入的p，即s，插入到表尾；表尾rr：“到后面去吧你~”
-			rr->next = s;
+			rr->next = s;//rr保存着上一结点的地址，s保存着当前待插入的结点位置
 		else//rr后面的结点出现比p小的情况，取第一个，将p插入到这个结点的前面：表中rr：“欸，大哥，你在我前面，嘿嘿！”
 		{
 			s->next = rr->next;//先要保存下来rr的后一个地址，
