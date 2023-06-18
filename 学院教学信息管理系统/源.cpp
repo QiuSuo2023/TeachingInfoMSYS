@@ -30,10 +30,11 @@ typedef struct node {
 
 /*函数声明部分*/
 	/*一级功能*/
+Link ReadFile();//零、文件读取
 void Menu(Link l);//一、菜单选择
 void Add(Link l);//二、添加----------------按钮1
 void Disp(Link l);//三、显示---------------按钮2
-void Qur(Link l);//四、查询----------------按钮3
+int Qur(Link l);//四、查询----------------按钮3
 void Sort(Link l);//五、排序---------------按钮4
 void Modify(Link l);//六、检查并修改-------按钮5
 void Del(Link l);//七、删除----------------按钮6
@@ -57,27 +58,41 @@ int saveflag = 0;/*保存到硬盘的标志*/
 /*主函数*/
 int main()
 {
-	Link l;//定义链表，l是头指针，该节点的数据域不存储数据，仅作牵头作用，可以省去创建链表循环内的表头判断，对排序也有帮助
+	Link l;//链表指针，接收读取的数据
+/*一、读取文件信息*/
+	l = ReadFile();
+/*二、进入菜单界面*/
+	Menu(l);
+	return 0;
+}
+
+/*一级功能*/
+/*零、文件读取函数*/
+Link ReadFile() {
+	Link l;//定义链表，l是头指针，该节点的数据域不存储数据
+	//仅作牵头作用，可以省去创建链表循环内的表头判断，对排序也有帮助
 	FILE* fp;//定义文件指针
 	int count = 0;//保存文件中的记录条数（结点个数）
 	Node* p, * r;//p是new指针，r是尾指针
 
-/*一、读取文件信息*/
 	/*创建单链表的头结点*/
 	l = (Node*)malloc(sizeof(Node));//申请内存（1），同时将头指针定在头结点（3）；
-	if (!l) {printf("\n 申请空间失败！ ");return 0;
+	if (!l) {
+		printf("\n 申请空间失败！ "); return 0;
 	}/*常规检查*/
 	l->next = NULL;//头结点指针域初始化（2）
 	r = l;//放好尾指针（4）
 
-	/*读取文件数据，复制到单链表*/
+	/*读取文件数据，创建并复制单链表*/
 	fp = fopen("teacher", "ab+");//打开文件：可读写、不清空、不存在会新建
-	if (fp == NULL) {printf("\n=====>打开失败！\n");exit(0);/*终止可执行程序*/
+	if (fp == NULL) {
+		printf("\n=====>打开失败！\n"); exit(0);/*终止可执行程序*/
 	}/*常规检查*/
 	printf("奋力读取文件中，请稍后...\n");//交互提示
 	while (!feof(fp)) {//文件结束时退出循环
 		p = (Node*)malloc(sizeof(Node));//逐个创建结点，接受文件数据（1）
-		if (!p) {printf("空间申请失败！");exit(0);/*终止可执行程序*/
+		if (!p) {
+			printf("空间申请失败！"); exit(0);/*终止可执行程序*/
 		}/*常规检查*/
 		/*读取文件，为结点数据域赋值*/
 		if (fread(p, sizeof(Node), 1, fp) == 1) {
@@ -90,13 +105,9 @@ int main()
 	fclose(fp); //关闭文件
 	printf("=====>打开文件成功！共读取到 %d 条记录\n\n\n\n=====>登录我的账号：\n", count);
 	system("pause");
-
-/*二、菜单界面*/
-	Menu(l);
-	return 0;
+	return l;
 }
 
-/*一级功能*/
 /*一、菜单选择函数*/
 void Menu(Link l) {
 	int select;			//保存用户输入的选择（0-9）
@@ -114,10 +125,10 @@ void Menu(Link l) {
 		case 0:Quit(l); return;//0.返回main函数，由main函数结束程序
 		case 1:Add(l); break;//1.添加记录
 		case 2:system("cls"); Disp(l); break;//2.显示记录
-		case 3:Qur(l);  break;//3.信息查询
-		case 4:Sort(l); break;//4.记录排序
+		case 3:Qur(l);  break;//3.查询信息
+		case 4:Sort(l); break;//4.排序记录
 		case 5:Modify(l); break;//5.修改信息
-
+		case 6:Del(l); break;//6.删除信息
 		case 7:Save(l); getchar();break;//7.立即保存，保存前做判定
 		default:Wrong(); getchar();break;//如果错误输入
 		}
@@ -134,7 +145,10 @@ void Disp(Link l) {
 		getchar();
 		return;//退出此函数，返回主调函数
 	}
-	printf("\n\n");
+	//printf("\n\n");//显示界面可修改=>
+	printf("\t\t\t\t\t   ******************************\n");
+	printf("\t\t\t\t\t   *          全部记录          *\n");
+	printf("\t\t\t\t\t   ******************************\n");
 	//printheader();//界面表格
 	printf(HEADER1);//1
 	printf(HEADER2);//2
@@ -157,13 +171,20 @@ void Add(Link l) {
 	s = l->next;//检查指针，从实际数据开始，一开始指向NULL
 
 	system("cls");
-	Disp(l);//先清屏，打印已有信息
-	printf("\n以上是系统原有信息.\n");
-
-	while (r->next != NULL)
-		r = r->next;//将尾指针定位到表尾，追加或新建记录
+	/*添加页面*/
+	printf("\t\t\t\t\t   ******************************\n");
+	printf("\t\t\t\t\t   *          添加记录          *\n");
+	printf("\t\t\t\t\t   ******************************\n");
+	/*链表有数据则打印原有信息*/
+	if (l->next) {
+		Disp(l);
+		printf("\n以上是系统原有信息.\n");
+	}
 
 	/*输入部分开始*/
+	/*将尾指针定位到表尾，追加或新建记录*/
+	while (r->next != NULL)
+		r = r->next;
 	while (1) //可以循环输入多条记录，直到用户向num输入0时返回主菜单，或重复时选择退回主菜单
 	{
 		/*输入和确认*/
@@ -213,45 +234,48 @@ void Add(Link l) {
 			stringinput(p->data.lesson[2], 15, "课程3：");
 			p->data.score = numberinput("教学效果综合评分：");//数据域赋值
 			p->next = NULL;//指针域赋值
-			
-			/*确认是否重输*/
+			/*4步中间加个判断：确认是否重输*/
 			int select;
 			printf("=====>按【0】重输，按【1】继续\n");
 			scanf("%d", &select);
 			if (select == 0) {
 				free(p);continue;//清空本次数据，释放不要的内存
 			}
-			r->next = p;//接入上一个结点；r->next始终为空；r最开始为传入的链表尾结点或表头，l头结点不存信息（3）
+			r->next = p;//接入上一个结点；r->next始终为空；r最开始为传入链表的尾结点或表头，l头结点不存信息（3）
 			r = p;//尾指针指向新节点（4）
+			/*已修改标记*/
+			saveflag = 1;//全局变量
 		}
-		/*已修改标记*/
-		saveflag = 1;//全局变量
 	}//输入部分结束；输入0时结束此函数，返回主菜单
-	//return;//应该不用再有return; 上面已有出口？
 }
 
 /*四、查询函数*/
-void Qur(Link l) {
+int Qur(Link l) {
 	int select;//方式选择：1-按职工号，2-按姓名，3-按课程名，其他：退出函数，返回主菜单
-	char ch;//退出选择：y,!y
+	int count = 0;//记录个数
 	char searchinput[20];//保存用户查询内容
 	Node** p;//接收目标记录的定位，这里需要调用Locate函数，是其子功能,但对于课程会有重复的现象，所以用到了指针数组,定义一个二级指针来接受多个结点的地址
-
+	/*检查有无文件*/
 	if (!l->next)//若链表为空，l是头指针
 	{
 		system("cls");
 		printf("=====>当前文件无教师记录\n");
 		getchar();//暂停，滞留
 		system("pause");
-		return;//退出函数，返回主菜单
+		return count;//退出函数，返回主菜单
 	}
-
+	/*进入查询界面*/
 	while (1)
 	{
+		/*查询界面设计*/
 		system("cls");
+		printf("\t\t\t\t\t   ******************************\n");
+		printf("\t\t\t\t\t   *          查询信息          *\n");
+		printf("\t\t\t\t\t   ******************************\n");
 		printf("\n=====>1：按职工号搜索		=====>2：按姓名搜索		=====>3：按课程名搜索\n");
-		printf("请选择你的搜索方式：");
+		printf("请选择你的搜索方式：");//这里必须严格输入整数，否则会出现bug
 		scanf("%d", &select);
+
 		if (select == 1)//按职工号,唯一
 		{
 			stringinput(searchinput, 10, "请输入要查询的教师职工号:");
@@ -259,20 +283,19 @@ void Qur(Link l) {
 
 			if (p[0])//p[0]就是符合的结点地址
 			{
+				count++;
 				printheader();//界面表格123
 				printdata(p[0]);//4
 				printf(END);//5
-				printf("按任意键退出");
 				getchar();
 				system("pause");
-				break;
 			}
 			else//如果p[0]=NULL,没有匹配的
 			{
 				Nofind();
 				system("pause");
+				getchar();
 			}
-			//getchar();
 		}//查询完毕
 
 		else if (select == 2)//按姓名，唯一
@@ -281,6 +304,7 @@ void Qur(Link l) {
 			p = Locate(l, searchinput, 2);//找到姓名为searchinput的结点，返回其地址
 			if (p[0])//如果不为NULL
 			{
+				count++;
 				printheader();//界面表格123
 				printdata(p[0]);//4
 				printf(END);//5
@@ -321,6 +345,7 @@ void Qur(Link l) {
 			if (flag != 1) {//不存在匹配的
 				Nofind();
 				system("pause");
+				getchar();
 			}
 		}//查询完毕
 
@@ -330,15 +355,17 @@ void Qur(Link l) {
 			system("pause");
 			getchar();				//日志：getchar();还蛮重要的
 		}//提示完毕
-
-		printf("\n=====>是否继续查询【y/!y】：\n");
-		scanf("%c", &ch);
-		if (ch == 'Y' || ch == 'y') {
-			continue;
+		int ch;//退出选择器
+		printf("\n=====>【1】继续查询    【2】退出查询\n");
+		scanf("%d", &ch);
+		if (ch == 1)
+		{
+			getchar(); continue;//第二次循环直接结束？可能是char型输入被缓冲区的\n填掉了,=>改成了整型
 		}
 		else
-			return;//返回主菜单
+			break;//结束循环
 	}
+	return count;//如果不在继续查询，就返回查找到的总个数
 }
 
 /*五、排序函数*/
@@ -499,8 +526,8 @@ void Modify(Link l) {
 				case 2:printf("修改前职称：%s\n", p[0]->data.title); stringinput(p[0]->data.title, 15, "修改后："); break;
 				case 3:printf("修改前性别：%s\n", p[0]->data.sex); stringinput(p[0]->data.sex, 3, "修改后："); break;
 				case 4:printf("修改前课程1：%s\n", p[0]->data.lesson[0]); stringinput(p[0]->data.lesson[0], 15, "修改后："); break;
-				case 5:printf("修改前课程2：%s\n", p[0]->data.lesson[2]); stringinput(p[0]->data.lesson[1], 15, "修改后："); break;
-				case 6:printf("修改前课程3：%s\n", p[0]->data.lesson[3]); stringinput(p[0]->data.lesson[2], 15, "修改后："); break;
+				case 5:printf("修改前课程2：%s\n", p[0]->data.lesson[1]); stringinput(p[0]->data.lesson[1], 15, "修改后："); break;
+				case 6:printf("修改前课程3：%s\n", p[0]->data.lesson[2]); stringinput(p[0]->data.lesson[2], 15, "修改后："); break;
 				case 7:for (int i = 0; i < 3; i++) {
 					printf("修改前课程%d：%s\n", i, p[0]->data.lesson[i]); stringinput(p[0]->data.lesson[i], 15, "修改后：");
 				}break;
@@ -510,8 +537,8 @@ void Modify(Link l) {
 					printf("修改前职称：%s\n", p[0]->data.title); stringinput(p[0]->data.title, 15, "修改后：");
 					printf("修改前性别：%s\n", p[0]->data.sex); stringinput(p[0]->data.sex, 3, "修改后：");
 					printf("修改前课程1：%s\n", p[0]->data.lesson[0]); stringinput(p[0]->data.lesson[0], 15, "修改后：");
-					printf("修改前课程2：%s\n", p[0]->data.lesson[2]); stringinput(p[0]->data.lesson[1], 15, "修改后：");
-					printf("修改前课程3：%s\n", p[0]->data.lesson[3]); stringinput(p[0]->data.lesson[2], 15, "修改后：");
+					printf("修改前课程2：%s\n", p[0]->data.lesson[1]); stringinput(p[0]->data.lesson[1], 15, "修改后：");
+					printf("修改前课程3：%s\n", p[0]->data.lesson[2]); stringinput(p[0]->data.lesson[2], 15, "修改后：");
 					printf("修改前评分：%lf\n", p[0]->data.score); p[0]->data.score = numberinput("修改后："); break;
 				}//单次修改结束
 				int select3;//确认修改无误
@@ -534,10 +561,142 @@ void Modify(Link l) {
 
 /*七、删除函数*/
 void Del(Link l) {
+	Node** p, * r;//p接收要删除的结点，可能有多个，p接收指针数组的首元素地址
+	char findmess[20];//存放用户输入内容
+	system("cls");
+	/*检查有无文件*/
+	if (!l->next) {
+		printf("\n=====>当前文件夹暂无教师记录.\n");
+		system("pause");
+		getchar();
+		return;//文件为空，返回菜单
+	}
+	/*进入删除界面*/
+	while (1) {
+		/*删除界面设计*/
+		system("cls");
+		printf("\t\t\t\t\t   ******************************\n");
+		printf("\t\t\t\t\t   *          删除信息          *\n");
+		printf("\t\t\t\t\t   ******************************\n");
+		Disp(l);
+		printf("=====>以上是原有教师信息.\n");
 
+		/*有精确查询功能*/
+		int messageNum;//根据查询到的个数
+		printf("=====>【1】精确查询 【2】继续\n");
+		int sel2;//精确查询选择器
+		scanf("%d", &sel2);
+		if (sel2 == 1)
+			messageNum =Qur(l);//先让用户查看要删除教师的相关信息，确认是否删除
+
+		/*删除确认*/
+		printf("请您核查，是否删除？【1】信息有误，我需要删除    【2】核查正确，返回主菜单\n");
+		int sel3;//确认删除选择器
+		scanf("%d", &sel3);
+		if (sel3 != 1)
+			return;//返回菜单，这里可以在建一个更改页面，就不必返回菜单
+
+		/*开始删除*/
+		int sel1;//删除方式选择器
+		if (sel2==1&&messageNum == 1) {//如果精确查询到只一条记录则跳过方式选择和提示，直接删除此记录即可
+			sel1 = 1;//进入分支1
+		}
+		else {
+			printf("=====>【1】按工号删除    【2】按姓名删除    【3】按课程删除\n");
+			scanf("%d", &sel1);
+		}
+		
+		if (sel1 == 1)
+		{
+			stringinput(findmess, 10, "=====>请输入要删除教师的工号：\n");
+			p = Locate(l, findmess, 1);
+			if (p[0])//存在
+			{
+				r = l;
+				while (r->next != p[0])
+					r = r->next;
+				r->next = p[0]->next;//绕过p[0]结点
+				free(p[0]);
+				printf("=====>删除成功\n");
+				printf("=====>共删除 1 条教师信息.\n");//统计提示
+				getchar();
+				saveflag = 1;//标记为已修改
+			}
+			else
+				Nofind();
+			getchar();
+		}
+		else if (sel1 == 2)
+		{
+			stringinput(findmess, 15, "=====>请输入要删除教师的姓名：\n");
+			p = Locate(l, findmess, 2);
+			if (p[0])//存在
+			{
+				r = l;
+				while (r->next != p[0])
+					r = r->next;
+				r->next = p[0]->next;//绕过p[0]结点
+				free(p[0]);
+				printf("=====>删除成功\n");
+				printf("=====>共删除 1 条教师信息.\n");//统计提示
+				getchar();
+				saveflag = 1;//标记为已修改
+			}
+			else
+				Nofind();
+			getchar();
+		}
+		else if (sel1 == 3)
+		{
+			stringinput(findmess, 15, "=====>请输入要删除教师的课程名：\n");
+			p = Locate(l, findmess, 3);
+			int flag = 0;//判断是否找到
+			int count = 0;//记录个数
+			for (int i = 0; p[i] != NULL; i++)//遍历删除所有要删除结点
+			{
+				getchar();//按一次打印一个
+				if (p[i])//删完为止
+				{
+					/*得到要删结点的前一个结点，需要它的指针域*/
+					r = l;
+					while (r->next != p[i])
+						r = r->next;
+					r->next = p[i]->next;//绕过p[i]结点
+					free(p[i]);//删除
+					flag = 1;//至少找到了一个
+					count++;//计数器
+				}
+			}
+			printf("=====>删除成功\n");
+			printf("=====>共删除 %d 条教师信息.\n", count);//统计提示
+			system("pause");
+			getchar();
+			//如果p=NULL
+			if (flag != 1) {//不存在
+				Nofind();
+				system("pause");
+			}
+		}//删除完毕
+
+		else//其他选择
+		{
+			Wrong();//错误输入
+			system("pause");
+			getchar();
+		}//提示完毕
+
+		printf("\n=====>是否继续删除【y/!y】：\n");
+		char ch;//选择器
+		scanf("%c", &ch);
+		if (ch == 'Y' || ch == 'y')
+			continue;
+		else
+			return;//返回主调函数，main函数
+	}//循环删除结束，返回main函数
+	return;
 }
 
-/*退出并选择保存函数*/
+/*八、退出并选择保存函数*/
 void Quit(Link l) {
 	char ch;//选择器
 	/*保存确认*/
@@ -549,7 +708,7 @@ void Quit(Link l) {
 		if (ch == 'Y' || ch == 'y') Save(l);
 	}
 	/*结束语*/
-	printf("\n=====>感谢您的使用！祝您生活愉快！\n");
+	printf("\n=====>感谢您的使用！祝您生活愉快！");
 	getchar();
 	return;
 }
@@ -558,7 +717,9 @@ void Quit(Link l) {
 /*1.存档子功能函数*/
 void Save(Link l) {
 	if (saveflag != 1) {
-		printf("\n\n\=====>您未做任何修改，无需重复保存哦.\n按任意键返回主菜单...");
+		printf("\n=====>当前您未做任何修改，无需重复保存哦.\n");
+		system("pause");
+		getchar();
 		return;//保存前检查数据是否经过改动
 	}
 
@@ -591,7 +752,8 @@ void Save(Link l) {
 	else
 	{
 		system("cls");
-		printf("当前链表为空，没有记录被保存.\n");
+		printf("=====>当前链表为空,文件将为空.\n");//因为以wb方式重写，如未写入数据，文件将保持空
+		system("pause");
 		getchar();
 	}
 	fclose(fp);
@@ -604,7 +766,7 @@ void stringinput(char* t, int lens, const char* notice) {
 		printf(notice);
 		scanf("%s", n);//核心，主要是scanf
 		if (strlen(n) > lens)
-			printf("\n太多看不过来，不好意思\n");
+			printf("\n太多了看不过来，不好意思\n");
 	} while (strlen(n) > lens);
 	strcpy(t, n);//一个输入把关，有效输入才复制到后续需要的字符串中
 }
@@ -718,8 +880,6 @@ void Nofind() {
 	getchar();
 }
 
-
-
 /*日志*/
 /*
 日志：2023 6.16 0:35
@@ -745,4 +905,25 @@ void Nofind() {
 开始做数据流图之后，发现了不够模块化
 开始决定将菜单模块从main函数中独立出来，使程序更简简洁；
 如下Menu();
+*/
+
+/*
+日志：2023 6.17 半夜
+printf("\n=====>是否继续查询【y/!y】：\n");
+		scanf("%c", &ch);
+		if (ch == 'Y' || ch == 'y')
+		{
+			getchar(); continue;//第二次循环直接结束？===>改为整型，ok
+		}
+		Qur()函数需要添加一个返回值，表示找到几个===>ok
+*/
+
+/*
+日志：2023 6.17 9：14
+无文件时，删除界面，和保存界面不会暂停=>ok
+*/
+
+/*
+日志：
+文件读取也可以封装成一个函数
 */
