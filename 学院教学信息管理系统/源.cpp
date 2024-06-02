@@ -254,7 +254,8 @@ int Qur(Link l) {
 	int select;//方式选择：1-按职工号，2-按姓名，3-按课程名，其他：退出函数，返回主菜单
 	int count = 0;//记录个数
 	char searchinput[20];//保存用户查询内容
-	Node** p;//接收目标记录的定位，这里需要调用Locate函数，是其子功能,但对于课程会有重复的现象，所以用到了指针数组,定义一个二级指针来接受多个结点的地址
+	Node** p;//接收目标记录的定位，这里需要调用Locate函数，是其子功能,但对于课程会有重复的现象，
+	//所以用到了指针数组,定义一个二级指针来接受多个结点的地址
 	/*检查有无文件*/
 	if (!l->next)//若链表为空，l是头指针
 	{
@@ -723,7 +724,6 @@ void Save(Link l) {
 		getchar();
 		return;//保存前检查数据是否经过改动
 	}
-
 	FILE* fp;
 	Node* p;
 	int count = 0;
@@ -741,8 +741,7 @@ void Save(Link l) {
 			p = p->next;//下一个结点
 			count++;//计数
 		}
-		else
-			break;
+		else break;
 	}
 	if (count > 0) {
 		getchar();
